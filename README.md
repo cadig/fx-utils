@@ -162,6 +162,8 @@ every watcher subprocess together.
 
 Currency strength meter (scans all 28 major pairs, redraws a live terminal chart every 60s):
 
+![Currency strength meter example](docs/images/currency-strength-meter-example.png)
+
 ```bash
 python scripts/currency_strength_meter.py --account main
 ```

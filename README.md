@@ -121,6 +121,10 @@ On an actual close (not `--dry-run`), it speaks "Closed {nickname} trade" via ma
 kiwi (NZD_USD), aussie (AUD_USD), cad (USD_CAD), swiss (USD_CHF). Other pairs fall back to
 a spoken "EUR/GBP"-style form.
 
+The process exits on its own - no need to Ctrl+C - once there's nothing left to watch:
+either it closes the position, or a check finds no open position for the instrument at all
+(so start the watcher only once the trade is actually open; it won't wait around for one).
+
 Recommended first run against practice with `--dry-run --once` to confirm credentials and
 account access before letting it run live and unattended.
 

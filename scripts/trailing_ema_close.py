@@ -44,12 +44,12 @@ def check_once(
     granularity: str,
     direction: str,
     dry_run: bool,
-) -> bool:
-    """Returns True if this check actually closed the position (never True for dry runs)."""
+) -> str:
+    """Returns "no_position", "wrong_direction", "closed", or "holding"."""
     position = get_open_position(client, account_id, instrument)
     if position is None:
-        log(f"No open {instrument} position. Skipping.")
-        return False
+        log(f"No open {instrument} position. Nothing to watch.")
+        return "no_position"
 
     position_matches = position.is_long if direction == "long" else position.is_short
     if not position_matches:
@@ -58,7 +58,7 @@ def check_once(
             f"'{direction}' (long_units={position.long_units} "
             f"short_units={position.short_units}). Skipping."
         )
-        return False
+        return "wrong_direction"
 
     # EMA needs warm-up history; fetch more than the period to let it stabilize.
     df = get_candles(client, instrument, granularity=granularity, count=ema_period * 3)
@@ -82,15 +82,15 @@ def check_once(
     if should_close:
         if dry_run:
             log(f"DRY RUN: would close position ({reason}).")
-            return False
+            return "holding"
         log(f"{reason} -> closing position.")
         result = close_position(client, account_id, instrument, position=position)
         log(f"Close response: {result}")
         speak(f"Closed {pair_nickname(instrument)} trade")
-        return True
+        return "closed"
 
     log(f"No {reason} yet. Holding position.")
-    return False
+    return "holding"
 
 
 @click.command()
@@ -124,11 +124,14 @@ def main(alias, instrument, ema_period, granularity, direction, interval, dry_ru
 
     while True:
         try:
-            closed = check_once(
+            status = check_once(
                 client, account.id, instrument, ema_period, granularity, direction, dry_run
             )
-            if closed:
+            if status == "closed":
                 log("Position closed - exiting, nothing left to watch.")
+                return
+            if status == "no_position":
+                log("No position to watch - exiting.")
                 return
         except Exception as exc:  # keep the poller alive across transient API/network errors
             log(f"ERROR during check: {exc!r}")

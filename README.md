@@ -176,10 +176,12 @@ Useful flags:
 
 - `--interval 60` — poll interval in seconds
 - `--once` — run a single scan, print each currency's current score, and exit (no chart)
+- `--granularity M1` — candle granularity, e.g. M1, M5, M15, H1
+- `--lookback 20` — number of completed candles to look back for % change
 
-Each currency's score is the sum of signed % price changes (20-period M1 lookback) across
-the 7 pairs it appears in, so e.g. a strong USD_JPY move adds to both USD's and JPY's scores
-in the correct direction. Rendered each update as a color-coded horizontal diverging bar
+Each currency's score is the sum of signed % price changes (default: 20-period M1 lookback)
+across the 7 pairs it appears in, so e.g. a strong USD_JPY move adds to both USD's and JPY's
+scores in the correct direction. Rendered each update as a color-coded horizontal diverging bar
 chart (`fx_utils/terminal_viz.py`), sorted strongest to weakest: bars grow outward from a
 center zero-axis, so extreme currencies stretch toward the screen edges while middling ones
 cluster near the center. Each currency has a fixed color (`fx_utils/currency_colors.py`), and

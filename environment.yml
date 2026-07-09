@@ -1,0 +1,16 @@
+name: fx-utils
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pandas
+  - numpy
+  - requests
+  - python-dotenv
+  - click
+  - pyyaml
+  - pytest
+  - pip
+  - pip:
+      - oandapyV20

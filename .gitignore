@@ -1,0 +1,19 @@
+# credentials - never commit
+config/credentials.env
+config/accounts.yaml
+*.env
+!config/credentials.example.env
+
+# python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+build/
+dist/
+
+# logs
+*.log
+
+# os
+.DS_Store

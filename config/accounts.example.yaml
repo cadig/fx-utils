@@ -1,0 +1,11 @@
+# Copy this file to accounts.yaml (same directory) and fill in real values.
+# accounts.yaml is gitignored and must never be committed.
+
+accounts:
+  - id: "101-001-00000000-001"
+    alias: main
+  - id: "101-001-00000000-002"
+    alias: secondary
+
+# alias used by utilities when no --account is passed on the CLI
+default_alias: main

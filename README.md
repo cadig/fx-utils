@@ -43,8 +43,16 @@ Two files under `config/` hold secrets and are gitignored:
    default_alias: main
    ```
 
-Both `config/credentials.env` and `config/accounts.yaml` are in `.gitignore` — they will
-never be pushed to GitHub. Only the `*.example.*` versions are tracked.
+3. `config/watchers.yaml` — optional, only needed for
+   [launching multiple trailing stops at once](#trailing-ema-close-listener):
+
+   ```bash
+   cp config/watchers.example.yaml config/watchers.yaml
+   ```
+
+`config/credentials.env`, `config/accounts.yaml`, and `config/watchers.yaml` are all in
+`.gitignore` — they will never be pushed to GitHub. Only the `*.example.*` versions are
+tracked.
 
 ## Layout
 
@@ -58,11 +66,19 @@ fx_utils/            reusable library
   pairs.py           generates the 28 major-currency pairs, resolves each to its
                       actual OANDA instrument name + base/quote orientation
   strength.py        per-pair % change + per-currency cumulative strength scoring
+  notify.py          local notification helpers (macOS `say` text-to-speech)
+  pair_nicknames.py  instrument -> spoken nickname mapping (euro, cable, yen, ...)
+  currency_colors.py fixed ANSI color per major currency
+  terminal_viz.py    ANSI horizontal diverging bar chart renderer
+  watchers.py         loads/validates config/watchers.yaml, builds subprocess commands
+  launcher.py         runs multiple labeled subprocesses concurrently, prefixed output
   cli.py             `fx-utils` general-purpose interactive CLI
 
 scripts/
-  trailing_ema_close.py     specific utility: closes EUR_USD position if last
-                             closed 1m candle closes below EMA26 (1m)
+  trailing_ema_close.py     specific utility: closes a position if the last closed
+                             candle crosses its EMA against the given direction
+  launch_trailing_stops.py  launches multiple trailing_ema_close.py watchers at once,
+                             configured via config/watchers.yaml
   currency_strength_meter.py   specific utility: live terminal chart of cumulative
                                 strength (% change, 20x M1 lookback) for all 8 majors
 
@@ -107,6 +123,42 @@ a spoken "EUR/GBP"-style form.
 
 Recommended first run against practice with `--dry-run --once` to confirm credentials and
 account access before letting it run live and unattended.
+
+### Launching several trailing stops at once
+
+Hand-typing that whole command per trade gets tedious. Define each trailing stop once in
+`config/watchers.yaml` (copy from `config/watchers.example.yaml`) and launch them all
+together as subprocesses:
+
+```yaml
+watchers:
+  - account: main
+    instrument: EUR_USD
+    ema_period: 26
+    granularity: M1
+    direction: long
+    interval: 60
+    dry_run: false
+
+  - account: main
+    instrument: USD_JPY
+    ema_period: 20
+    granularity: M5
+    direction: short
+    interval: 60
+    dry_run: true
+```
+
+```bash
+python scripts/launch_trailing_stops.py
+python scripts/launch_trailing_stops.py --config config/watchers.yaml   # explicit path
+```
+
+Every watcher runs as its own `trailing_ema_close.py` subprocess (same no-defaults
+validation applies — a watcher missing a required field fails fast at startup, before
+anything launches). Output from every watcher is interleaved in one terminal, each line
+prefixed with its label (e.g. `[EUR_USD/long]`). Ctrl+C stops the launcher and terminates
+every watcher subprocess together.
 
 Currency strength meter (scans all 28 major pairs, redraws a live terminal chart every 60s):
 

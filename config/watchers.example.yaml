@@ -1,0 +1,21 @@
+# Copy this file to watchers.yaml (same directory) and define the trailing stops you
+# want to run together. Each watcher launches as its own trailing_ema_close.py
+# subprocess - every field below is required, matching that script's own no-defaults
+# requirement.
+
+watchers:
+  - account: main
+    instrument: EUR_USD
+    ema_period: 26
+    granularity: M1
+    direction: long
+    interval: 60
+    dry_run: false
+
+  - account: main
+    instrument: USD_JPY
+    ema_period: 20
+    granularity: M5
+    direction: short
+    interval: 60
+    dry_run: true

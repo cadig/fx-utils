@@ -20,6 +20,7 @@ VALID_ENVIRONMENTS = {"practice", "live"}
 class Account:
     id: str
     alias: str
+    base_currency: str
 
 
 @dataclass(frozen=True)
@@ -72,7 +73,17 @@ def load_settings() -> Settings:
     with ACCOUNTS_PATH.open() as f:
         raw = yaml.safe_load(f) or {}
 
-    accounts = [Account(id=a["id"], alias=a["alias"]) for a in raw.get("accounts", [])]
+    accounts = []
+    for a in raw.get("accounts", []):
+        base_currency = a.get("base_currency")
+        if not base_currency:
+            raise ValueError(
+                f"Account '{a.get('alias', a.get('id'))}' in {ACCOUNTS_PATH} is missing "
+                "base_currency"
+            )
+        accounts.append(
+            Account(id=a["id"], alias=a["alias"], base_currency=base_currency.upper())
+        )
     if not accounts:
         raise ValueError(f"No accounts defined in {ACCOUNTS_PATH}")
 

@@ -4,8 +4,10 @@
 accounts:
   - id: "101-001-00000000-001"
     alias: main
+    base_currency: USD
   - id: "101-001-00000000-002"
     alias: secondary
+    base_currency: USD
 
 # alias used by utilities when no --account is passed on the CLI
 default_alias: main
